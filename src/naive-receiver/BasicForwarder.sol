@@ -2,6 +2,7 @@
 // Damn Vulnerable DeFi v4 (https://damnvulnerabledefi.xyz)
 pragma solidity =0.8.25;
 
+import {Test, console} from "forge-std/Test.sol";
 import {EIP712} from "solady/utils/EIP712.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
@@ -48,7 +49,7 @@ contract BasicForwarder is EIP712 {
 
         if (IHasTrustedForwarder(request.target).trustedForwarder() != address(this)) revert InvalidTarget();
 
-        address signer = ECDSA.recover(_hashTypedData(getDataHash(request)), signature);
+        address signer = ECDSA.recover((getDataHash(request)), signature);
         if (signer != request.from) revert InvalidSigner();
     }
 

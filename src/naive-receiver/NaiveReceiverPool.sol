@@ -2,6 +2,7 @@
 // Damn Vulnerable DeFi v4 (https://damnvulnerabledefi.xyz)
 pragma solidity =0.8.25;
 
+import {Test, console} from "forge-std/Test.sol";
 import {IERC3156FlashLender} from "@openzeppelin/contracts/interfaces/IERC3156FlashLender.sol";
 import {IERC3156FlashBorrower} from "@openzeppelin/contracts/interfaces/IERC3156FlashBorrower.sol";
 import {FlashLoanReceiver} from "./FlashLoanReceiver.sol";
@@ -40,10 +41,7 @@ contract NaiveReceiverPool is Multicall, IERC3156FlashLender {
         return FIXED_FEE;
     }
 
-    function flashLoan(IERC3156FlashBorrower receiver, address token, uint256 amount, bytes calldata data)
-        external
-        returns (bool)
-    {
+    function flashLoan(IERC3156FlashBorrower receiver, address token, uint256 amount, bytes calldata data) external returns (bool){
         if (token != address(weth)) revert UnsupportedCurrency();
 
         // Transfer WETH and handle control to receiver
@@ -63,11 +61,13 @@ contract NaiveReceiverPool is Multicall, IERC3156FlashLender {
         return true;
     }
 
+    // here is the bug we can set msg.sender 
     function withdraw(uint256 amount, address payable receiver) external {
+        console.log("withdraw");
         // Reduce deposits
         deposits[_msgSender()] -= amount;
         totalDeposits -= amount;
-
+        console.log(_msgSender(),receiver);
         // Transfer ETH to designated receiver
         weth.transfer(receiver, amount);
     }
@@ -83,9 +83,10 @@ contract NaiveReceiverPool is Multicall, IERC3156FlashLender {
         totalDeposits += amount;
     }
 
+    //  fault here 
     function _msgSender() internal view override returns (address) {
         if (msg.sender == trustedForwarder && msg.data.length >= 20) {
-            return address(bytes20(msg.data[msg.data.length - 20:]));
+            return  address(bytes20(msg.data[msg.data.length - 20:]));
         } else {
             return super._msgSender();
         }
