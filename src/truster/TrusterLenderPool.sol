@@ -2,6 +2,7 @@
 // Damn Vulnerable DeFi v4 (https://damnvulnerabledefi.xyz)
 pragma solidity =0.8.25;
 
+import {Test, console} from "forge-std/Test.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {DamnValuableToken} from "../DamnValuableToken.sol";
@@ -25,12 +26,13 @@ contract TrusterLenderPool is ReentrancyGuard {
         uint256 balanceBefore = token.balanceOf(address(this));
 
         token.transfer(borrower, amount);
-        target.functionCall(data);
 
+        // scope for bug - call to external contract
+        target.functionCall(data);
+        
         if (token.balanceOf(address(this)) < balanceBefore) {
             revert RepayFailed();
         }
-
         return true;
     }
 }

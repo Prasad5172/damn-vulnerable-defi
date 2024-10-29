@@ -3,6 +3,7 @@
 pragma solidity =0.8.25;
 
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
+import {Test, console} from "forge-std/Test.sol";
 
 interface IFlashLoanEtherReceiver {
     function execute() external payable;
@@ -34,9 +35,9 @@ contract SideEntranceLenderPool {
 
     function flashLoan(uint256 amount) external {
         uint256 balanceBefore = address(this).balance;
-
+        console.log(address(this).balance);
         IFlashLoanEtherReceiver(msg.sender).execute{value: amount}();
-
+        console.log(address(this).balance);
         if (address(this).balance < balanceBefore) {
             revert RepayFailed();
         }
