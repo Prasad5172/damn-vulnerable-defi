@@ -12,6 +12,10 @@
         "amount": 2502024387994809
     },
     {
+        "address": "0x44E97aF4418b7a17AABD8090bEA0A471a366305C",
+        "amount": 11524763827831882
+    },
+    {
         "address": "0x2e83a11aab4475abdb6ff5843a72b7e563fe7e3b",
         "amount": 3992359700938512
     },
@@ -750,10 +754,6 @@
     {
         "address": "0x704366f62b2153ba4c5f2521cca66b8184165e77",
         "amount": 4835806954833022
-    },
-    {
-        "address": "0x44E97aF4418b7a17AABD8090bEA0A471a366305C",
-        "amount": 11524763827831882
     },
     {
         "address": "0x5c95afb4a16848c1be88351fe3ae5f80b7c9937a",

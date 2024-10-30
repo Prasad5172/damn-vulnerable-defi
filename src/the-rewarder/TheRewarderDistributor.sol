@@ -2,6 +2,7 @@
 // Damn Vulnerable DeFi v4 (https://damnvulnerabledefi.xyz)
 pragma solidity =0.8.25;
 
+import {Test, console} from "forge-std/Test.sol";
 import {FixedPointMathLib} from "solady/utils/FixedPointMathLib.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
@@ -89,19 +90,20 @@ contract TheRewarderDistributor {
 
             uint256 wordPosition = inputClaim.batchNumber / 256;
             uint256 bitPosition = inputClaim.batchNumber % 256;
-
+            // console.log(address(token),address(inputTokens[inputClaim.tokenIndex]));
             if (token != inputTokens[inputClaim.tokenIndex]) {
                 if (address(token) != address(0)) {
                     if (!_setClaimed(token, amount, wordPosition, bitsSet)) revert AlreadyClaimed();
                 }
-
                 token = inputTokens[inputClaim.tokenIndex];
                 bitsSet = 1 << bitPosition; // set bit at given position
                 amount = inputClaim.amount;
             } else {
                 bitsSet = bitsSet | 1 << bitPosition;
                 amount += inputClaim.amount;
+                // console.log(amount);
             }
+
 
             // for the last claim
             if (i == inputClaims.length - 1) {
@@ -112,8 +114,9 @@ contract TheRewarderDistributor {
             bytes32 root = distributions[token].roots[inputClaim.batchNumber];
 
             if (!MerkleProof.verify(inputClaim.proof, root, leaf)) revert InvalidProof();
-
+            // console.log("hlo");
             inputTokens[inputClaim.tokenIndex].transfer(msg.sender, inputClaim.amount);
+            console.log(amount);
         }
     }
 

