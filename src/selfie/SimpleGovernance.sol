@@ -2,6 +2,7 @@
 // Damn Vulnerable DeFi v4 (https://damnvulnerabledefi.xyz)
 pragma solidity =0.8.25;
 
+import {Test, console} from "forge-std/Test.sol";
 import {DamnValuableVotes} from "../DamnValuableVotes.sol";
 import {ISimpleGovernance} from "./ISimpleGovernance.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
@@ -54,7 +55,6 @@ contract SimpleGovernance is ISimpleGovernance {
         if (!_canBeExecuted(actionId)) {
             revert CannotExecute(actionId);
         }
-
         GovernanceAction storage actionToExecute = _actions[actionId];
         actionToExecute.executedAt = uint64(block.timestamp);
 
@@ -100,6 +100,7 @@ contract SimpleGovernance is ISimpleGovernance {
     function _hasEnoughVotes(address who) private view returns (bool) {
         uint256 balance = _votingToken.getVotes(who);
         uint256 halfTotalSupply = _votingToken.totalSupply() / 2;
+        // console.log(who ,halfTotalSupply);
         return balance > halfTotalSupply;
     }
 }
