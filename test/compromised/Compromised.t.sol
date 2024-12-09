@@ -75,7 +75,7 @@ contract CompromisedChallenge is Test {
      * CODE YOUR SOLUTION HERE
      */
     function test_compromised() public checkSolved {
-        
+        console.log(oracle.getMedianPrice(nft.symbol()));
     }
 
     /**

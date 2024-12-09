@@ -87,7 +87,7 @@ contract WalletRegistry is IProxyCreationCallback, Ownable {
         }
 
         // Ensure wallet initialization is the expected
-        uint256 threshold = Safe(walletAddress).getThreshold();
+        uint256 threshold = Safe(walletAddress).getThreshold(); //@audit it's a SafeProxy address,change the safeProxy storage with delegate call in safeProxy call to safe contract
         if (threshold != EXPECTED_THRESHOLD) {
             revert InvalidThreshold(threshold);
         }

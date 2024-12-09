@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Damn Vulnerable DeFi v4 (https://damnvulnerabledefi.xyz)
 pragma solidity =0.8.25;
-
+import {Test, console} from "forge-std/Test.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {ClimberTimelockBase} from "./ClimberTimelockBase.sol";
 import {ADMIN_ROLE, PROPOSER_ROLE, MAX_TARGETS, MIN_TARGETS, MAX_DELAY} from "./ClimberConstants.sol";
@@ -64,6 +64,7 @@ contract ClimberTimelock is ClimberTimelockBase {
 
         operations[id].readyAtTimestamp = uint64(block.timestamp) + delay;
         operations[id].known = true;
+        console.logBytes32(id);
     }
 
     /**
@@ -90,7 +91,7 @@ contract ClimberTimelock is ClimberTimelockBase {
         for (uint8 i = 0; i < targets.length; ++i) {
             targets[i].functionCallWithValue(dataElements[i], values[i]);
         }
-
+        console.logBytes32(id);
         if (getOperationState(id) != OperationState.ReadyForExecution) {
             revert NotReadyForExecution(id);
         }

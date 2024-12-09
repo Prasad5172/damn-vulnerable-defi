@@ -40,7 +40,7 @@ contract Exchange is ReentrancyGuard {
 
         id = token.safeMint(msg.sender);
         unchecked {
-            payable(msg.sender).sendValue(msg.value - price);
+            payable(msg.sender).sendValue(msg.value - price);//@audit bug here
         }
 
         emit TokenBought(msg.sender, id, price);

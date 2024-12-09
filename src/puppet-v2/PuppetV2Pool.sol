@@ -3,7 +3,7 @@
 pragma solidity =0.8.25;
 
 import {UniswapV2Library} from "./UniswapV2Library.sol";
-
+import {Test, console} from "forge-std/Test.sol";
 interface IERC20 {
     function transfer(address to, uint256 amount) external returns (bool);
     function transferFrom(address from, address to, uint256 amount) external returns (bool);
@@ -35,7 +35,7 @@ contract PuppetV2Pool {
     function borrow(uint256 borrowAmount) external {
         // Calculate how much WETH the user must deposit
         uint256 amount = calculateDepositOfWETHRequired(borrowAmount);
-
+        console.log(amount);
         // Take the WETH
         _weth.transferFrom(msg.sender, address(this), amount);
 
