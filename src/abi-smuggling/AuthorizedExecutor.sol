@@ -4,7 +4,7 @@ pragma solidity =0.8.25;
 
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
-
+import {Test, console} from "forge-std/Test.sol";
 abstract contract AuthorizedExecutor is ReentrancyGuard {
     using Address for address;
 
@@ -50,11 +50,12 @@ abstract contract AuthorizedExecutor is ReentrancyGuard {
         assembly {
             selector := calldataload(calldataOffset)
         }
-
+        console.logBytes4(selector);
+        console.logAddress(msg.sender);
+        console.logAddress(target);
         if (!permissions[getActionId(selector, msg.sender, target)]) {
             revert NotAllowed();
         }
-
         _beforeFunctionCall(target, actionData);
 
         return target.functionCall(actionData);

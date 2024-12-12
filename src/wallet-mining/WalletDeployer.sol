@@ -12,14 +12,14 @@ import {SafeProxyFactory} from "@safe-global/safe-smart-account/contracts/proxie
  */
 contract WalletDeployer {
     // Addresses of a Safe factory and copy on this chain
-    SafeProxyFactory public immutable cook;
-    address public immutable cpy;
+    SafeProxyFactory public immutable cook; //safeProxyFactory
+    address public immutable cpy; //safeProxy
 
     uint256 public constant pay = 1 ether;
     address public immutable chief = msg.sender;
-    address public immutable gem;
+    address public immutable gem; //token
 
-    address public mom;
+    address public mom;//authorizer -AuthorizerUpgradeable
     address public hat;
 
     error Boom();
@@ -49,7 +49,7 @@ contract WalletDeployer {
             return false;
         }
 
-        if (address(cook.createProxyWithNonce(cpy, wat, num)) != aim) {
+        if (address(cook.createProxyWithNonce(cpy, wat, num)) != aim) { 
             return false;
         }
 

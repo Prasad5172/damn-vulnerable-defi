@@ -5,6 +5,7 @@ pragma solidity =0.8.25;
 import {Initializable} from "solady/utils/Initializable.sol";
 import {Ownable} from "solady/auth/Ownable.sol";
 import {DamnValuableStaking, DamnValuableToken} from "../DamnValuableStaking.sol";
+import {Test, console} from "forge-std/Test.sol";
 
 /**
  * @notice  Permissioned vault to deposit fees of the NFT marketpkace.

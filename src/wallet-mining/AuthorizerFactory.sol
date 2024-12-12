@@ -20,3 +20,4 @@ contract AuthorizerFactory {
         TransparentProxy(payable(authorizer)).setUpgrader(upgrader);
     }
 }
+
